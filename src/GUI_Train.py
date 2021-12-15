@@ -162,7 +162,7 @@ class GUI_T(QWidget):
         s = re.sub(r'[ỲÝỴỶỸ]', 'Y', s)
         s = re.sub(r'[Đ]', 'D', s)
         s = re.sub(r'[đ]', 'd', s)
-        return s
+        return s.replace(" ","")
     def get_dataset(self):
         if (self.edtid.text().strip() == '' or self.edtclass.text().strip() == '' or self.edtname.text().strip() == '' or self.edtbirthday.text().strip() == ''):
             QMessageBox.about(self, "Error", "Vui lòng nhập đầy đủ thông tin")
@@ -197,18 +197,17 @@ class GUI_T(QWidget):
 
         id_insert = self.no_accent_vietnamese(name)+id
         if (id != '' and clss != '' and name != '' and bday != '' and self.check_dataset==True):
-            try:
-                os.system(
-                    'python classifier.py TRAIN ../Dataset/ ../Models/20180402-114759.pb ../Models/facemodel.pkl --batch_size 1000')
-                insert = "INSERT INTO `user_infor`(`id`, `name`, `class`, `bday`) VALUES ('"+ id_insert+"', '" + name + "', '" + clss + "', '" +bday+ "');"
-                print(insert)
-                cursor = self.connection.cursor()
-                cursor.execute(insert)
+            if(os.system(
+                'python classifier.py TRAIN ../Dataset/ ../Models/20180402-114759.pb ../Models/facemodel.pkl --batch_size 1000')==0):
+                    insert = "INSERT INTO `user_infor`(`id`, `name`, `class`, `bday`) VALUES ('" + id_insert + "', '" + name + "', '" + clss + "', '" + bday + "');"
+                    print(insert)
+                    cursor = self.connection.cursor()
+                    cursor.execute(insert)
 
-                self.connection.commit()
-                cursor.close()
-                print("ok")
-            except:
+                    self.connection.commit()
+                    cursor.close()
+                    print("ok")
+            else:
                 QMessageBox.about(self, "Error", "Train thất bại")
         else:
             QMessageBox.about(self, "Error", "Vui lòng lấy đầy đủ thông tin")
